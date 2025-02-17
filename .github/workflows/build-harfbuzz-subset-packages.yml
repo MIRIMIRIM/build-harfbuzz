@@ -97,7 +97,7 @@ jobs:
         cd ./build
         python gen-csproj.py mac
         dotnet pack MIR.NativeLib.Harfbuzz.Static.Mac.csproj -o ./pkg
-        dotnet pack MIR.NativeLib.Harfbuzz.Shared.Mac.csproj -o ./pkg
+        # dotnet pack MIR.NativeLib.Harfbuzz.Shared.Mac.csproj -o ./pkg
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -107,5 +107,5 @@ jobs:
 
     - name: Upload nuget packages
       run: |
-        cd ./pkg
+        cd ./build/pkg
         dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }}  --source nuget.org --skip-duplicate

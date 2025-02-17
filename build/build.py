@@ -59,10 +59,12 @@ def get_configure_command_args(runtime, lib_type):
 
 def execute(runtime, lib_type):
     configure_args = get_configure_command_args(runtime, lib_type)
-    subprocess.run(configure_args)
+    print(" ".join(configure_args))
+    subprocess.run(configure_args, check=True)
 
     compile_command_args = ["meson", "compile", "-C", configure_args[-1]]
-    subprocess.run(compile_command_args)
+    print(" ".join(compile_command_args))
+    subprocess.run(compile_command_args, check=True)
 
 def main():
     if len(sys.argv) != 3:
