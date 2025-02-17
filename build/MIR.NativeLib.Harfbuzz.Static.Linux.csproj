@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    
+    <PropertyGroup>
+        <PackageId>MIR.NativeLib.Harfbuzz.Static.Linux</PackageId>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="linux-musl-x64-static\src\libharfbuzz.a" Pack="true" PackagePath="runtimes\linux-musl-x64\native" />
+        <None Include="linux-musl-x64-static\src\libharfbuzz-subset.a" Pack="true" PackagePath="runtimes\linux-musl-x64\native" />
+        <None Include="linux-musl-arm64-static\src\libharfbuzz.a" Pack="true" PackagePath="runtimes\linux-musl-arm64\native" />
+        <None Include="linux-musl-arm64-static\src\libharfbuzz-subset.a" Pack="true" PackagePath="runtimes\linux-musl-arm64\native" />
+    </ItemGroup>
+
+    <Import Project="global.props" />
+
+</Project>

@@ -1,0 +1,106 @@
+name: Build hb-subset
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build-on-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        harfbuzz_ver: ['10.1.0']
+        dotnet_version: ['9.x']
+        os: [windows-latest, macos-latest]
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet_version }}
+
+    - name: Prepare
+      run: |
+        python -m pip install meson ninja
+        git clone --recurse-submodules https://github.com/harfbuzz/harfbuzz.git -b ${{ matrix.harfbuzz_ver }} --depth=1 harfbuzz-${{ matrix.harfbuzz_ver }}
+
+    - name: Setup msbuild (target windows arm64)
+      if: matrix.os == 'windows-latest'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64_arm64
+
+    - name: Build native library (win-arm64)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --cross-file ../scripts/project.ini --cross-file ../scripts/win-arm64.ini -Ddefault_library=static -Db_vscrt=static_from_buildtype ../build/win-arm64-static
+        meson compile -C ../build/win-arm64-static
+
+    - name: Setup msbuild (target windows x64)
+      if: matrix.os == 'windows-latest'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Build native library (win-x64)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --native-file ../scripts/project.ini -Ddefault_library=static -Db_vscrt=static_from_buildtype ../build/win-x64-static
+        meson compile -C ../build/win-x64-static
+
+    - name: Setup Zig Compiler (target linux)
+      if: matrix.os == 'windows-latest'
+      uses: mlugg/setup-zig@v1
+      with:
+        version: "master"
+
+    - name: Configure (linux-musl)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --native-file ../scripts/zig.ini --cross-file ../scripts/zig.ini --cross-file ../scripts/project.ini --cross-file ../scripts/linux-musl-x64.ini -Ddefault_library=static ../build/linux-musl-x64-static
+        meson compile -C ../build/linux-musl-x64-static
+
+    - name: Configure (linux-musl)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --native-file ../scripts/zig.ini --cross-file ../scripts/zig.ini --cross-file ../scripts/project.ini --cross-file ../scripts/linux-musl-arm64.ini -Ddefault_library=static ../build/linux-musl-arm64-static
+        meson compile -C ../build/linux-musl-arm64-static
+
+    - name: Build native library (osx-arm64)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --native-file ../scripts/project.ini -Ddefault_library=static ../build/osx-arm64-static
+        meson compile -C ../build/osx-arm64-static
+
+    - name: Build native library (osx-x64)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd ./harfbuzz-${{ matrix.harfbuzz_ver }}
+        meson --cross-file ../scripts/project.ini --cross-file ../scripts/osx-x64.ini -Ddefault_library=static ../build/osx-x64-static
+        meson compile -C ../build/osx-x64-static
+
+    - name: Build nupkg (win and linux)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ./build
+        mkdir pkg
+        dotnet pack MIR.NativeLib.Harfbuzz.Static.Win.csproj -o ./pkg
+        dotnet pack MIR.NativeLib.Harfbuzz.Static.Linux.csproj -o ./pkg
+
+    - name: Build nupkg (osx)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd ./build
+        dotnet pack MIR.NativeLib.Harfbuzz.Static.Mac.csproj -o ./pkg
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifact-${{ matrix.os }}
+        path: ./build

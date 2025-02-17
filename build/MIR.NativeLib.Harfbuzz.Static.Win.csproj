@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    
+    <PropertyGroup>
+        <PackageId>MIR.NativeLib.Harfbuzz.Static.Win</PackageId>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="win-x64-static\src\libharfbuzz.a" Pack="true" PackagePath="runtimes\win-x64\native" />
+        <None Include="win-x64-static\src\libharfbuzz-subset.a" Pack="true" PackagePath="runtimes\win-x64\native" />
+        <None Include="win-arm64-static\src\libharfbuzz.a" Pack="true" PackagePath="runtimes\win-arm64\native" />
+        <None Include="win-arm64-static\src\libharfbuzz-subset.a" Pack="true" PackagePath="runtimes\win-arm64\native" />
+    </ItemGroup>
+
+    <Import Project="global.props" />
+
+</Project>
