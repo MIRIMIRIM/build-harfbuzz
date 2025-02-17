@@ -32,8 +32,7 @@ runtimes = [runtime_template.format(prefix=platforms[p]["prefix"], arch=arch) fo
 
 def get_configure_command_args(runtime, lib_type):
 
-    runtime_splt = runtime.split('-')
-    platform, arch = runtime_splt[0], runtime_splt[-1]
+    platform = runtime.rsplit('-', 1)[0]
     special_args = [p['args'] for p in platforms.values() if p['prefix'] == platform][0]
 
     args = ["meson"]
