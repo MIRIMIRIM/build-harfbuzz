@@ -27,6 +27,12 @@ def generate_csproj_content(platform_key, lib_type):
     platform_info = platforms[platform_key]
     package_id = f"MIR.NativeLib.Harfbuzz.{lib_type.capitalize()}.{platform_key.capitalize()}"
     file_ext = extension_map[platform_key][lib_type]
+
+    if platform_key == "win":
+        # remove 'lib'
+        base_lib_name2 = base_lib_name[3:]
+    else:
+        base_lib_name2 = base_lib_name
     
     none_entries = []
     for arch in architectures:
@@ -38,7 +44,7 @@ def generate_csproj_content(platform_key, lib_type):
 
         for lib in ["", "-subset"]:
             entry = (
-                f'    <None Include="{runtime_bt_dir}\\src\\{base_lib_name}{lib}{file_ext}" Pack="true" PackagePath="runtimes\\{runtime_dir}\\native" />'
+                f'    <None Include="{runtime_bt_dir}\\src\\{base_lib_name2}{lib}{file_ext}" Pack="true" PackagePath="runtimes\\{runtime_dir}\\native" />'
             )
             none_entries.append(entry)
     
